@@ -410,21 +410,20 @@ export class Game {
         }
 
         // Collisions.
-        if (
+        if (!this.powerups.isInvulnerable() && (
           CollisionSystem.hitsPipes(this.bird, this.pipes.getActivePipes()) ||
-          CollisionSystem.hitsCeiling(this.bird)
-        ) {
+          CollisionSystem.hitsCeiling(this.bird) ||
+          CollisionSystem.hitsGround(this.bird)
+        )) {
           if (this.powerups.consumeShield()) {
             this.shakeTime = JUICE.SHAKE_DURATION * 0.35;
             this.flashTime = JUICE.FLASH_DURATION * 0.5;
             this.audio.play('hit');
             vibrate(20);
+            this._showToast('Shield saved you!');
           } else {
             this._enterGameOver();
           }
-        } else if (CollisionSystem.hitsGround(this.bird)) {
-          // Clamp to ground then die.
-          this._enterGameOver();
         }
         break;
 
