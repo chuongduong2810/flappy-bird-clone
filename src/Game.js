@@ -400,7 +400,14 @@ export class Game {
         if (passed > 0) this._onScore(passed);
 
         const collected = this.powerups.checkCollect(this.bird.getBounds(), this.pipes.getActivePipes());
-        if (collected) this.audio.play('swoosh');
+        if (collected) {
+          this.audio.play('swoosh');
+          const msg = collected === 'shield' ? 'Power-up: SHIELD'
+            : collected === 'slowmo' ? 'Power-up: SLOW'
+              : collected === 'scoreplus' ? 'Power-up: +1'
+                : `Power-up: ${collected}`;
+          this._showToast(msg);
+        }
 
         // Collisions.
         if (
