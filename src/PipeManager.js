@@ -32,6 +32,7 @@ export class PipeManager {
     // Pre-allocate the pool.
     this.pool = Array.from({ length: PIPES.POOL_SIZE }, () => new Pipe());
     this.diffConfig = DIFFICULTY.normal;
+    this._spawnsSincePowerup = 0;
     this.reset();
   }
 
@@ -40,6 +41,7 @@ export class PipeManager {
     // Distance until the next pipe should spawn.
     this.spawnCountdown = 0;
     this.firstSpawnDone = false;
+    this._spawnsSincePowerup = 0;
   }
 
   setDifficulty(key) {
@@ -73,9 +75,14 @@ export class PipeManager {
     pipe.gap = this.diffConfig.gap;
     // Stagger phase so adjacent pipes don't move in sync.
     pipe.gapTime = Math.random() * Math.PI * 2;
-    pipe.hasPowerup = Math.random() < POWERUP.SPAWN_CHANCE;
+    // Guarantee a pickup at least every few spawns so players actually see them.
+    const force = this._spawnsSincePowerup >= 5;
+    pipe.hasPowerup = force || (Math.random() < POWERUP.SPAWN_CHANCE);
     if (pipe.hasPowerup) {
       pipe.powerupType = POWERUP.TYPES[Math.floor(Math.random() * POWERUP.TYPES.length)];
+      this._spawnsSincePowerup = 0;
+    } else {
+      this._spawnsSincePowerup += 1;
     }
   }
 
