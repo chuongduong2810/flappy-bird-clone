@@ -30,16 +30,19 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const limit = Math.min(parseInt(req.query?.limit || '20', 10), 50);
       // zrange with rev:true returns highest scores first
+      // @upstash/redis auto-parses JSON members, so members may already be objects
       const members = await getRedis().zrange(KV_KEY, 0, limit - 1, { rev: true });
       const entries = members.map((m) => {
-        try { return JSON.parse(m); } catch { return null; }
+        if (m && typeof m === 'object') return m;
+        try { return JSON.parse(String(m)); } catch { return null; }
       }).filter(Boolean);
       return res.json({ entries, configured: true });
     }
 
     if (req.method === 'POST') {
       const { name, score, difficulty } = req.body || {};
-      if (!name || typeof score !== 'number' || score < 0 || score > 9999) {
+      const numScore = Number(score);
+      if (!name || !Number.isFinite(numScore) || numScore < 0 || numScore > 9999) {
         return res.status(400).json({ error: 'Invalid payload' });
       }
       const safeName = String(name).replace(/[^\p{L}\p{N} _-]/gu, '').trim().slice(0, 12);
@@ -47,7 +50,7 @@ export default async function handler(req, res) {
 
       const entry = {
         name: safeName,
-        score: Math.floor(score),
+        score: Math.floor(numScore),
         difficulty: difficulty || 'normal',
         date: Date.now(),
       };

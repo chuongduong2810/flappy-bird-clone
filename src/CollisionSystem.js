@@ -28,8 +28,8 @@ export class CollisionSystem {
       const pipeRight = p.x + halfW;
       // Quick horizontal reject.
       if (b.right < pipeLeft || b.left > pipeRight) continue;
-      const gapTop = p.gapY - PIPES.GAP / 2;
-      const gapBottom = p.gapY + PIPES.GAP / 2;
+      const gapTop = p.gapY - p.gap / 2;
+      const gapBottom = p.gapY + p.gap / 2;
       // Collision if the bird is outside the vertical gap.
       if (b.top < gapTop || b.bottom > gapBottom) {
         return true;

@@ -122,10 +122,10 @@ export const SETTINGS = {
 };
 
 export const DIFFICULTY = {
-  easy:      { speed: 100, gap: 140, spacing: 200 },
-  normal:    { speed: 130, gap: 110, spacing: 175 },
-  hard:      { speed: 160, gap: 85,  spacing: 150 },
-  nightmare: { speed: 200, gap: 68,  spacing: 130 },
+  easy:      { speed: 100, gap: 140, spacing: 200, moveAmplitude: 0,  movePeriod: 0   },
+  normal:    { speed: 130, gap: 110, spacing: 175, moveAmplitude: 0,  movePeriod: 0   },
+  hard:      { speed: 160, gap: 85,  spacing: 150, moveAmplitude: 28, movePeriod: 2.4 },
+  nightmare: { speed: 200, gap: 65,  spacing: 125, moveAmplitude: 50, movePeriod: 1.6 },
 };
 
 export const POWERUP = {

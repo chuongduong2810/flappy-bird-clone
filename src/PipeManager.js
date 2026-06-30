@@ -13,7 +13,10 @@ class Pipe {
   }
   reset() {
     this.x = 0;
-    this.gapY = 0; // center of the gap
+    this.gapY = 0;     // current center of the gap (moves for hard/nightmare)
+    this.gapYBase = 0; // spawn-time center; oscillation is relative to this
+    this.gap = PIPES.GAP; // actual gap size for this pipe (from difficulty)
+    this.gapTime = 0;  // elapsed seconds for oscillation phase
     this.active = false;
     this.scored = false;
     this.hasPowerup = false;
@@ -61,7 +64,11 @@ export class PipeManager {
     pipe.reset();
     pipe.active = true;
     pipe.x = VIEW.WIDTH + PIPES.WIDTH / 2;
-    pipe.gapY = this._randomGapY();
+    pipe.gapYBase = this._randomGapY();
+    pipe.gapY = pipe.gapYBase;
+    pipe.gap = this.diffConfig.gap;
+    // Stagger phase so adjacent pipes don't move in sync.
+    pipe.gapTime = Math.random() * Math.PI * 2;
     pipe.hasPowerup = Math.random() < POWERUP.SPAWN_CHANCE;
     if (pipe.hasPowerup) {
       pipe.powerupType = POWERUP.TYPES[Math.floor(Math.random() * POWERUP.TYPES.length)];
@@ -91,9 +98,15 @@ export class PipeManager {
       }
     }
 
+    const { moveAmplitude, movePeriod } = this.diffConfig;
     for (const p of this.pool) {
       if (!p.active) continue;
       p.x -= dx;
+      // Vertical oscillation for hard/nightmare modes.
+      if (moveAmplitude > 0) {
+        p.gapTime += dt;
+        p.gapY = p.gapYBase + Math.sin((p.gapTime / movePeriod) * Math.PI * 2) * moveAmplitude;
+      }
       // Score when the bird's x passes the pipe center.
       if (!p.scored && p.x < birdX) {
         p.scored = true;
@@ -119,8 +132,8 @@ export class PipeManager {
     for (const p of this.pool) {
       if (!p.active) continue;
       const left = p.x - w / 2;
-      const topPipeBottom = p.gapY - PIPES.GAP / 2;
-      const bottomPipeTop = p.gapY + PIPES.GAP / 2;
+      const topPipeBottom = p.gapY - p.gap / 2;
+      const bottomPipeTop = p.gapY + p.gap / 2;
 
       // Top pipe: drawn flipped vertically, its bottom edge at topPipeBottom.
       ctx.save();
