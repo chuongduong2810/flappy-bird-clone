@@ -26,6 +26,11 @@ body {
   align-items: center;
   justify-content: center;
   gap: 14px;
+  /* Respect notch / home-bar safe areas when running as PWA. */
+  padding-top: env(safe-area-inset-top, 0);
+  padding-right: env(safe-area-inset-right, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
 }
 
 #game {
@@ -50,27 +55,12 @@ body {
   }
 }
 
-#hint {
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 11px;
-  letter-spacing: 0.5px;
-  font-family: monospace;
-  user-select: none;
-  text-align: center;
-}
-
-/* On short screens, hide the hint to give the canvas room. */
-@media (max-height: 560px) {
-  #hint {
-    display: none;
-  }
-}
 
 /* ---- Floating round buttons (gear + trophy) ---- */
 #settings-gear,
 #leaderboard-btn {
   position: fixed;
-  top: 16px;
+  top: calc(16px + env(safe-area-inset-top, 0));
   width: 42px;
   height: 42px;
   border: none;

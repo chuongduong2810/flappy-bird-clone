@@ -259,11 +259,12 @@ export class Game {
 
   _resize() {
     const dpr = window.devicePixelRatio || 1;
-    // Fit the logical viewport into the window while preserving aspect ratio.
-    const scale = Math.min(
-      window.innerWidth / VIEW.WIDTH,
-      window.innerHeight / VIEW.HEIGHT
-    );
+    // Use the stage element's client dimensions so CSS safe-area padding
+    // (notch / home bar) is already subtracted before we compute scale.
+    const stage = this.canvas.parentElement;
+    const availW = stage ? stage.clientWidth : window.innerWidth;
+    const availH = stage ? stage.clientHeight : window.innerHeight;
+    const scale = Math.min(availW / VIEW.WIDTH, availH / VIEW.HEIGHT);
     const cssW = Math.floor(VIEW.WIDTH * scale);
     const cssH = Math.floor(VIEW.HEIGHT * scale);
 
