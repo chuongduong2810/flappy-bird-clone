@@ -1,0 +1,21 @@
+{
+  "name": "flappy-bird-clone",
+  "version": "1.0.0",
+  "description": "A polished, faithful 2D Flappy Bird clone built with HTML5 Canvas and ES modules.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "flappy-bird",
+    "game",
+    "canvas",
+    "html5"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
