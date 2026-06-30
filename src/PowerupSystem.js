@@ -3,13 +3,16 @@ import { POWERUP } from './config.js';
 export class PowerupSystem {
   constructor() {
     this.effect = null; // { type: string, timeLeft: number|Infinity }
+    this.invulnTime = 0;
   }
 
   reset() {
     this.effect = null;
+    this.invulnTime = 0;
   }
 
   update(dt) {
+    if (this.invulnTime > 0) this.invulnTime -= dt;
     if (!this.effect || this.effect.timeLeft === Infinity) return;
     this.effect.timeLeft -= dt;
     if (this.effect.timeLeft <= 0) this.effect = null;
@@ -48,9 +51,15 @@ export class PowerupSystem {
   consumeShield() {
     if (this.effect && this.effect.type === 'shield') {
       this.effect = null;
+      // Brief grace period so you don't immediately die while still overlapping a pipe.
+      this.invulnTime = 0.6;
       return true;
     }
     return false;
+  }
+
+  isInvulnerable() {
+    return this.invulnTime > 0;
   }
 
   consumeScorePlus() {
