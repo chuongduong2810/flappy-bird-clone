@@ -99,7 +99,8 @@ export class Bird {
   }
 
   draw(ctx) {
-    const img = this.frames[this.frameIndex];
+    const img = this.frames[this.frameIndex] || this.frames[1] || this.frames[0];
+    if (!img) return;
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.rotation);

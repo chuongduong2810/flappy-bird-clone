@@ -146,6 +146,7 @@ export const ALL_CHARACTERS = [
   { id: 'dragon',     label: 'Dragon',      price: 50,  up: 'dragon_upflap.png',       mid: 'dragon_midflap.png',       down: 'dragon_downflap.png'       },
   { id: 'red_dragon', label: 'Red Dragon',  price: 100, up: 'red_dragon_upflap.png',   mid: 'red_dragon_midflap.png',   down: 'red_dragon_downflap.png'   },
 ];
+// Runtime catalog lives in public/characters.json — edit via admin.html.
 
 export const COINS_PER_PIPE = {
   easy:      1,

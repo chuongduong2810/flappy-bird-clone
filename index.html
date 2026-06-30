@@ -29,9 +29,6 @@
     </div>
     <script type="module" src="src/main.js"></script>
     <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-      }
       let _pwaPrompt;
       const _installBtn = document.getElementById('pwa-install');
       window.addEventListener('beforeinstallprompt', (e) => {

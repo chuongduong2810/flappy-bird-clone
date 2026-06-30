@@ -1,13 +1,19 @@
 import { defineConfig } from 'vite';
+import { adminApiPlugin } from './vite-admin-api.js';
 
 export default defineConfig({
-  // Relative base so the production build works from any sub-path
-  // (e.g. GitHub Pages project sites) when opened directly.
   base: './',
+  plugins: [adminApiPlugin()],
   build: {
     outDir: 'dist',
-    assetsInlineLimit: 0, // keep sprite/audio files as real files
+    assetsInlineLimit: 0,
     target: 'es2018',
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        admin: 'admin.html',
+      },
+    },
   },
   server: {
     open: true,

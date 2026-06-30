@@ -15,6 +15,7 @@ import {
   DIFFICULTY,
   COINS_PER_PIPE,
 } from './config.js';
+import { loadCharacters, getCharacters } from './characters.js';
 import { AssetLoader } from './AssetLoader.js';
 import { AudioManager } from './AudioManager.js';
 import { Bird } from './Bird.js';
@@ -40,7 +41,7 @@ export class Game {
     this.ctx.imageSmoothingEnabled = false;
 
     this.state = STATE.LOADING;
-    this.assets = new AssetLoader();
+    this.assets = null;
     this.audio = new AudioManager();
     this.settings = new Settings();
     this.audio.setMuted(this.settings.get('muted'));
@@ -52,7 +53,7 @@ export class Game {
     this.loadProgress = 0;
     this.isNewBest = false;
     this.playerName = 'PLAYER';
-    this.coinSystem = new CoinSystem();
+    this.coinSystem = null;
     this._cheatBuf = '';
 
     // Juice state.
@@ -70,6 +71,9 @@ export class Game {
   }
 
   async start() {
+    await loadCharacters();
+    this.coinSystem = new CoinSystem();
+    this.assets = new AssetLoader(getCharacters());
     await this.assets.loadAll((p) => {
       this.loadProgress = p;
       this._drawLoading();
