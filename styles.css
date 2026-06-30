@@ -554,9 +554,10 @@ body {
 /* ---- Toast notification ---- */
 #game-toast {
   position: fixed;
-  top: calc(70px + env(safe-area-inset-top, 0));
+  top: auto;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0));
   left: 50%;
-  transform: translateX(-50%) translateY(-6px);
+  transform: translateX(-50%) translateY(6px);
   padding: 8px 16px;
   border-radius: 20px;
   background: rgba(0, 0, 0, 0.75);
@@ -575,7 +576,7 @@ body {
 }
 #game-toast.toast-hide {
   opacity: 0;
-  transform: translateX(-50%) translateY(-6px);
+  transform: translateX(-50%) translateY(6px);
 }
 
 /* ---- PWA install button ---- */
