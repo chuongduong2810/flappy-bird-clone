@@ -9,7 +9,6 @@ import { SETTINGS } from './config.js';
 
 const LABELS = {
   bgMode: { auto: 'Auto', day: 'Day', night: 'Night' },
-  birdColor: { random: 'Random', yellow: 'Yellow', red: 'Red', blue: 'Blue' },
 };
 
 export class SettingsUI {
@@ -71,19 +70,6 @@ export class SettingsUI {
         (val) => {
           this.settings.set('bgMode', val);
           this.onChange('bgMode', val);
-        }
-      )
-    );
-
-    panel.appendChild(
-      this._segmentRow(
-        'Bird',
-        SETTINGS.BIRD_COLORS,
-        this.settings.get('birdColor'),
-        LABELS.birdColor,
-        (val) => {
-          this.settings.set('birdColor', val);
-          this.onChange('birdColor', val);
         }
       )
     );

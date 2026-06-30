@@ -412,6 +412,171 @@ body {
   height: 4px;
 }
 
+/* ---- Shop button (top-left) ---- */
+#shop-btn {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top, 0));
+  left: 16px;
+  min-width: 72px;
+  height: 42px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 21px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 13px;
+  font-family: monospace;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  transition: background 0.2s ease, transform 0.15s ease;
+  z-index: 10;
+  white-space: nowrap;
+}
+#shop-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+/* ---- Shop overlay / panel ---- */
+#shop-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 25;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+#shop-overlay.visible { opacity: 1; }
+#shop-overlay[hidden]  { display: none; }
+
+#shop-panel {
+  width: min(340px, 90vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: #ded895;
+  border: 3px solid #5a5340;
+  border-radius: 12px;
+  padding: 20px 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  color: #5a5340;
+  font-family: monospace;
+  transform: translateY(12px) scale(0.96);
+  transition: transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+#shop-overlay.visible #shop-panel {
+  transform: translateY(0) scale(1);
+}
+#shop-panel h2 {
+  text-align: center;
+  font-size: 16px;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: "Press Start 2P", monospace;
+}
+.shop-balance {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 14px;
+  color: #c47b00;
+}
+
+/* ---- Character grid ---- */
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.shop-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 6px;
+  border: 2px solid #5a5340;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.35);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.shop-card.equipped {
+  background: #f4a322;
+  border-color: #c47b00;
+}
+.shop-sprite {
+  width: 48px;
+  height: auto;
+  image-rendering: pixelated;
+}
+.shop-name {
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.3;
+  font-family: monospace;
+}
+.shop-action-btn {
+  padding: 5px 8px;
+  border: 2px solid #5a5340;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.5);
+  color: #5a5340;
+  font-family: monospace;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+  white-space: nowrap;
+}
+.shop-action-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.8);
+}
+.shop-action-btn.active {
+  background: #fff;
+  cursor: default;
+}
+.shop-action-btn.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.shop-action-btn:disabled {
+  cursor: not-allowed;
+}
+
+/* ---- Toast notification ---- */
+#game-toast {
+  position: fixed;
+  top: calc(70px + env(safe-area-inset-top, 0));
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+#game-toast.toast-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+#game-toast.toast-hide {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-6px);
+}
+
 /* ---- PWA install button ---- */
 #pwa-install {
   margin-top: 4px;

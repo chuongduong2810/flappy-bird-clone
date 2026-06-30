@@ -5,11 +5,10 @@
  * avoid first-frame hitches.
  */
 
+import { ALL_CHARACTERS } from './config.js';
+
 const SPRITE_BASE = 'assets/sprites/';
 const AUDIO_BASE = 'assets/audio/';
-
-// Named sprites we rely on. Bird color is chosen at random per run.
-const BIRD_COLORS = ['yellow', 'red', 'blue'];
 
 const IMAGE_MANIFEST = {
   backgroundDay: 'background-day.png',
@@ -23,12 +22,12 @@ const IMAGE_MANIFEST = {
   ...Object.fromEntries(
     Array.from({ length: 10 }, (_, i) => [`digit${i}`, `${i}.png`])
   ),
-  // All bird animation frames for every color.
+  // All character animation frames for every character in ALL_CHARACTERS.
   ...Object.fromEntries(
-    BIRD_COLORS.flatMap((c) => [
-      [`${c}Up`, `${c}bird-upflap.png`],
-      [`${c}Mid`, `${c}bird-midflap.png`],
-      [`${c}Down`, `${c}bird-downflap.png`],
+    ALL_CHARACTERS.flatMap((c) => [
+      [`${c.id}Up`,   c.up],
+      [`${c.id}Mid`,  c.mid],
+      [`${c.id}Down`, c.down],
     ])
   ),
 };
@@ -46,7 +45,7 @@ export class AssetLoader {
   constructor() {
     this.images = {};
     this.audioBuffers = {};
-    this.birdColors = BIRD_COLORS;
+    this.birdColors = ALL_CHARACTERS.map(c => c.id);
   }
 
   /**

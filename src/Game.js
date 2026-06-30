@@ -13,6 +13,7 @@ import {
   JUICE,
   STORAGE_KEY,
   DIFFICULTY,
+  COINS_PER_PIPE,
 } from './config.js';
 import { AssetLoader } from './AssetLoader.js';
 import { AudioManager } from './AudioManager.js';
@@ -28,6 +29,8 @@ import { vibrate } from './Haptic.js';
 import { PowerupSystem } from './PowerupSystem.js';
 import { Leaderboard } from './Leaderboard.js';
 import { LeaderboardUI } from './LeaderboardUI.js';
+import { CoinSystem } from './CoinSystem.js';
+import { ShopUI } from './ShopUI.js';
 
 export class Game {
   constructor(canvas) {
@@ -49,6 +52,8 @@ export class Game {
     this.loadProgress = 0;
     this.isNewBest = false;
     this.playerName = 'PLAYER';
+    this.coinSystem = new CoinSystem();
+    this._cheatBuf = '';
 
     // Juice state.
     this.shakeTime = 0;
@@ -73,7 +78,7 @@ export class Game {
     this.audio.register(this.assets.audioBuffers);
 
     // Build entities once assets exist.
-    this.birdColor = this.settings.resolveBirdColor(this.assets.birdColors);
+    this.birdColor = this.settings.resolveBirdColor(this.coinSystem.getOwned());
     this.bird = new Bird(this.assets, this.birdColor);
     this.pipes = new PipeManager(this.assets);
     this.ui = new UIManager(this.assets);
@@ -99,6 +104,7 @@ export class Game {
     );
 
     this._buildTrophyButton();
+    this._buildShop();
 
     this._enterReady();
     requestAnimationFrame((t) => {
@@ -123,6 +129,30 @@ export class Game {
     document.getElementById('stage').appendChild(btn);
   }
 
+  _buildShop() {
+    this.shopUI = new ShopUI(this.coinSystem, this.settings, (charId) => {
+      this.birdColor = charId;
+      this.bird.setColor(charId);
+    });
+  }
+
+  _showToast(message) {
+    let toast = document.getElementById('game-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'game-toast';
+      document.getElementById('stage').appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.remove('toast-hide');
+    toast.classList.add('toast-show');
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => {
+      toast.classList.remove('toast-show');
+      toast.classList.add('toast-hide');
+    }, 2000);
+  }
+
   // ---- Settings reactions ------------------------------------------------
 
   _onSettingChange(key, value) {
@@ -139,7 +169,7 @@ export class Game {
       }
       case 'birdColor':
         // Apply immediately so the change is visible on the Ready screen.
-        this.birdColor = this.settings.resolveBirdColor(this.assets.birdColors);
+        this.birdColor = this.settings.resolveBirdColor(this.coinSystem.getOwned());
         this.bird.setColor(this.birdColor);
         break;
       case 'volume':
@@ -157,7 +187,7 @@ export class Game {
     this.state = STATE.READY;
     this.score = 0;
     // Re-roll random bird color and re-resolve auto background each round.
-    this.birdColor = this.settings.resolveBirdColor(this.assets.birdColors);
+    this.birdColor = this.settings.resolveBirdColor(this.coinSystem.getOwned());
     this.bird.setColor(this.birdColor);
     this.bird.reset();
     this.pipes.reset();
@@ -201,9 +231,10 @@ export class Game {
   // ---- Input -------------------------------------------------------------
 
   _setupInput() {
-    // Ignore game input while any modal (settings / name / leaderboard) is open.
+    // Ignore game input while any modal (settings / name / leaderboard / shop) is open.
     const modalOpen = () =>
       (this.settingsUI && !this.settingsUI.overlay.hidden) ||
+      (this.shopUI?.isOpen) ||
       (this.leaderboardUI &&
         (this.leaderboardUI.isNameOpen || this.leaderboardUI.isBoardOpen));
 
@@ -224,6 +255,22 @@ export class Game {
         // Toggle mute and keep the persisted setting in sync.
         const muted = this.audio.toggleMute();
         this.settings.set('muted', muted);
+      }
+    });
+
+    // Admin cheat: type "cheat" anywhere (within 3 s between keystrokes) to add 9999 coins.
+    let _cheatLastKey = 0;
+    window.addEventListener('keydown', (e) => {
+      if (!e.key || e.key.length !== 1) return;
+      const now = performance.now();
+      if (now - _cheatLastKey > 3000) this._cheatBuf = '';
+      _cheatLastKey = now;
+      this._cheatBuf = (this._cheatBuf + e.key.toLowerCase()).slice(-5);
+      if (this._cheatBuf === 'cheat') {
+        this._cheatBuf = '';
+        this.coinSystem.cheatUnlimitedCoins();
+        this.shopUI?.refresh();
+        this._showToast('ADMIN: 9999 coins added!');
       }
     });
     this.canvas.addEventListener('mousedown', flap);
@@ -360,8 +407,12 @@ export class Game {
     this.audio.play('point');
     this.scorePopTime = JUICE.SCORE_POP_DURATION;
     this.bounceTime = JUICE.PIPE_PASS_BOUNCE;
-    // Particle burst near the bird.
     this.particles.burst(this.bird.x + 10, this.bird.y);
+    // Award coins based on difficulty.
+    const diff = this.settings.get('difficulty') ?? 'normal';
+    const earned = (COINS_PER_PIPE[diff] ?? 2) * count;
+    this.coinSystem.addCoins(earned);
+    this.shopUI?.refresh();
   }
 
   // ---- Rendering ---------------------------------------------------------

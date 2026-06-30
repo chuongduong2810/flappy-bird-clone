@@ -138,3 +138,18 @@ export const POWERUP = {
   SLOWMO_COLOR: '#ce93d8',
   SCOREPLUS_COLOR: '#ffcc02',
 };
+
+export const ALL_CHARACTERS = [
+  { id: 'yellow',     label: 'Yellow Bird', price: 0,   up: 'yellowbird-upflap.png',   mid: 'yellowbird-midflap.png',   down: 'yellowbird-downflap.png'   },
+  { id: 'red',        label: 'Red Bird',    price: 0,   up: 'redbird-upflap.png',      mid: 'redbird-midflap.png',      down: 'redbird-downflap.png'      },
+  { id: 'blue',       label: 'Blue Bird',   price: 0,   up: 'bluebird-upflap.png',     mid: 'bluebird-midflap.png',     down: 'bluebird-downflap.png'     },
+  { id: 'dragon',     label: 'Dragon',      price: 50,  up: 'dragon_upflap.png',       mid: 'dragon_midflap.png',       down: 'dragon_downflap.png'       },
+  { id: 'red_dragon', label: 'Red Dragon',  price: 100, up: 'red_dragon_upflap.png',   mid: 'red_dragon_midflap.png',   down: 'red_dragon_downflap.png'   },
+];
+
+export const COINS_PER_PIPE = {
+  easy:      1,
+  normal:    2,
+  hard:      4,
+  nightmare: 8,
+};
