@@ -5,7 +5,7 @@
  * bottom pipe sprites are derived from it at draw time.
  */
 
-import { PIPES, VIEW, GROUND } from './config.js';
+import { PIPES, VIEW, GROUND, DIFFICULTY, POWERUP } from './config.js';
 
 class Pipe {
   constructor() {
@@ -16,6 +16,9 @@ class Pipe {
     this.gapY = 0; // center of the gap
     this.active = false;
     this.scored = false;
+    this.hasPowerup = false;
+    this.powerupType = null;
+    this.powerupCollected = false;
   }
 }
 
@@ -25,6 +28,7 @@ export class PipeManager {
     this.sprite = assets.images.pipeGreen;
     // Pre-allocate the pool.
     this.pool = Array.from({ length: PIPES.POOL_SIZE }, () => new Pipe());
+    this.diffConfig = DIFFICULTY.normal;
     this.reset();
   }
 
@@ -35,6 +39,10 @@ export class PipeManager {
     this.firstSpawnDone = false;
   }
 
+  setDifficulty(key) {
+    this.diffConfig = DIFFICULTY[key] || DIFFICULTY.normal;
+  }
+
   /** Returns an inactive pipe from the pool, or null if all are in use. */
   _acquire() {
     return this.pool.find((p) => !p.active) || null;
@@ -42,8 +50,8 @@ export class PipeManager {
 
   _randomGapY() {
     const playable = VIEW.HEIGHT - GROUND.HEIGHT;
-    const min = PIPES.MIN_TOP + PIPES.GAP / 2;
-    const max = playable - PIPES.MARGIN_BOTTOM - PIPES.GAP / 2;
+    const min = PIPES.MIN_TOP + this.diffConfig.gap / 2;
+    const max = playable - PIPES.MARGIN_BOTTOM - this.diffConfig.gap / 2;
     return min + Math.random() * (max - min);
   }
 
@@ -54,6 +62,10 @@ export class PipeManager {
     pipe.active = true;
     pipe.x = VIEW.WIDTH + PIPES.WIDTH / 2;
     pipe.gapY = this._randomGapY();
+    pipe.hasPowerup = Math.random() < POWERUP.SPAWN_CHANCE;
+    if (pipe.hasPowerup) {
+      pipe.powerupType = POWERUP.TYPES[Math.floor(Math.random() * POWERUP.TYPES.length)];
+    }
   }
 
   /**
@@ -62,20 +74,20 @@ export class PipeManager {
    * @param {number} dt
    * @param {number} birdX
    */
-  update(dt, birdX) {
+  update(dt, birdX, speedMult = 1) {
     let passed = 0;
-    const dx = PIPES.SPEED * dt;
+    const dx = this.diffConfig.speed * speedMult * dt;
 
     // Spawn cadence based on horizontal spacing.
     if (!this.firstSpawnDone) {
       this._spawn();
       this.firstSpawnDone = true;
-      this.spawnCountdown = PIPES.SPACING;
+      this.spawnCountdown = this.diffConfig.spacing;
     } else {
       this.spawnCountdown -= dx;
       if (this.spawnCountdown <= 0) {
         this._spawn();
-        this.spawnCountdown += PIPES.SPACING;
+        this.spawnCountdown += this.diffConfig.spacing;
       }
     }
 
@@ -119,6 +131,30 @@ export class PipeManager {
 
       // Bottom pipe: top edge at bottomPipeTop.
       ctx.drawImage(this.sprite, left, bottomPipeTop, w, h);
+
+      // Draw powerup pickup in center of gap
+      if (p.hasPowerup && !p.powerupCollected) {
+        const colors = { shield: POWERUP.SHIELD_COLOR, slowmo: POWERUP.SLOWMO_COLOR, scoreplus: POWERUP.SCOREPLUS_COLOR };
+        const letters = { shield: 'S', slowmo: 'T', scoreplus: '2' };
+        const color = colors[p.powerupType] || '#fff';
+        const letter = letters[p.powerupType] || '?';
+        const r = POWERUP.RADIUS;
+        ctx.save();
+        // Pulsing glow
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.gapY, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#fff';
+        ctx.font = `bold ${r}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(letter, p.x, p.gapY);
+        ctx.restore();
+      }
 
       // Suppress unused-var lint while keeping playable handy for tweaks.
       void playable;

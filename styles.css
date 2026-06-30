@@ -366,3 +366,70 @@ body {
   opacity: 0.8;
   padding: 16px 0;
 }
+
+/* ---- Leaderboard tabs (Local / Global) ---- */
+.lb-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.lb-tab {
+  flex: 1;
+  padding: 7px 0;
+  border: 2px solid #5a5340;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.35);
+  color: #5a5340;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.lb-tab.active {
+  background: #f4a322;
+  color: #fff;
+}
+.lb-diff-badge {
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.18);
+  color: inherit;
+  font-family: monospace;
+  white-space: nowrap;
+}
+
+/* ---- Volume slider ---- */
+.settings-slider-wrap {
+  flex: 1;
+  max-width: 140px;
+  display: flex;
+  align-items: center;
+}
+.settings-slider {
+  width: 100%;
+  accent-color: #f4a322;
+  cursor: pointer;
+  height: 4px;
+}
+
+/* ---- PWA install button ---- */
+#pwa-install {
+  margin-top: 4px;
+  padding: 8px 20px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-family: monospace;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background 0.2s ease, transform 0.15s ease;
+  letter-spacing: 0.5px;
+}
+#pwa-install:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}

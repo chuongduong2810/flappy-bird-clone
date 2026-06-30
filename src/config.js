@@ -116,5 +116,25 @@ export const SETTINGS = {
     muted: false,
     bgMode: 'auto',
     birdColor: 'random',
+    difficulty: 'normal',
+    volume: 0.8,
   },
+};
+
+export const DIFFICULTY = {
+  easy:      { speed: 100, gap: 140, spacing: 200 },
+  normal:    { speed: 130, gap: 110, spacing: 175 },
+  hard:      { speed: 160, gap: 85,  spacing: 150 },
+  nightmare: { speed: 200, gap: 68,  spacing: 130 },
+};
+
+export const POWERUP = {
+  SPAWN_CHANCE: 0.2,
+  RADIUS: 12,
+  TYPES: ['shield', 'slowmo', 'scoreplus'],
+  SLOWMO_DURATION: 4,
+  SLOWMO_FACTOR: 0.45,
+  SHIELD_COLOR: '#4fc3f7',
+  SLOWMO_COLOR: '#ce93d8',
+  SCOREPLUS_COLOR: '#ffcc02',
 };

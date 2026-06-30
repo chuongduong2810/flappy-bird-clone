@@ -56,6 +56,13 @@ export class SettingsUI {
     );
 
     panel.appendChild(
+      this._sliderRow('Volume', this.settings.get('volume') ?? 0.8, (v) => {
+        this.settings.set('volume', v);
+        this.onChange('volume', v);
+      })
+    );
+
+    panel.appendChild(
       this._segmentRow(
         'Background',
         SETTINGS.BG_MODES,
@@ -77,6 +84,20 @@ export class SettingsUI {
         (val) => {
           this.settings.set('birdColor', val);
           this.onChange('birdColor', val);
+        }
+      )
+    );
+
+    const DIFF_LABELS = { easy: 'Easy', normal: 'Norm', hard: 'Hard', nightmare: '☠' };
+    panel.appendChild(
+      this._segmentRow(
+        'Difficulty',
+        ['easy', 'normal', 'hard', 'nightmare'],
+        this.settings.get('difficulty') ?? 'normal',
+        DIFF_LABELS,
+        (val) => {
+          this.settings.set('difficulty', val);
+          this.onChange('difficulty', val);
         }
       )
     );
@@ -165,6 +186,26 @@ export class SettingsUI {
     select(current);
 
     row.append(span, group);
+    return row;
+  }
+
+  _sliderRow(label, initial, onInput) {
+    const row = document.createElement('div');
+    row.className = 'settings-row';
+    const span = document.createElement('span');
+    span.textContent = label;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'settings-slider-wrap';
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.className = 'settings-slider';
+    slider.min = '0';
+    slider.max = '1';
+    slider.step = '0.05';
+    slider.value = String(initial);
+    slider.addEventListener('input', () => onInput(parseFloat(slider.value)));
+    wrapper.appendChild(slider);
+    row.append(span, wrapper);
     return row;
   }
 

@@ -1,0 +1,23 @@
+{
+  "name": "Flappy Bird",
+  "short_name": "Flappy",
+  "description": "A polished Flappy Bird clone built with HTML5 Canvas",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1a2e",
+  "theme_color": "#4ec0ca",
+  "icons": [
+    {
+      "src": "assets/sprites/yellowbird-midflap.png",
+      "sizes": "34x24",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon",
+      "purpose": "any maskable"
+    }
+  ]
+}

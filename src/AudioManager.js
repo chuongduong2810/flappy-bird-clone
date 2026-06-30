@@ -11,6 +11,7 @@ export class AudioManager {
     this.buffers = {};
     this.fallback = {}; // blob URLs when Web Audio is unavailable
     this.muted = false;
+    this.volume = 0.8;
     this.masterGain = null;
     if (this.context) {
       this.masterGain = this.context.createGain();
@@ -45,6 +46,16 @@ export class AudioManager {
 
   setMuted(muted) {
     this.muted = muted;
+    if (this.masterGain) {
+      this.masterGain.gain.value = muted ? 0 : this.volume;
+    }
+  }
+
+  setVolume(v) {
+    this.volume = v;
+    if (this.masterGain) {
+      this.masterGain.gain.value = this.muted ? 0 : v;
+    }
   }
 
   toggleMute() {

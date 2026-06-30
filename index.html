@@ -9,6 +9,11 @@
     <meta name="theme-color" content="#4ec0ca" />
     <title>Flappy Bird</title>
     <link rel="icon" href="assets/favicon.ico" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Flappy Bird" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -21,7 +26,28 @@
     <div id="stage">
       <canvas id="game" width="288" height="512" aria-label="Flappy Bird game"></canvas>
       <p id="hint">Space / Click / Tap to flap &middot; M to mute</p>
+      <button id="pwa-install" hidden>⬇ Install App</button>
     </div>
     <script type="module" src="src/main.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
+      let _pwaPrompt;
+      const _installBtn = document.getElementById('pwa-install');
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        _pwaPrompt = e;
+        _installBtn.hidden = false;
+      });
+      _installBtn.addEventListener('click', async () => {
+        if (!_pwaPrompt) return;
+        _pwaPrompt.prompt();
+        await _pwaPrompt.userChoice;
+        _pwaPrompt = null;
+        _installBtn.hidden = true;
+      });
+      window.addEventListener('appinstalled', () => { _installBtn.hidden = true; });
+    </script>
   </body>
 </html>

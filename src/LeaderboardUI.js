@@ -137,6 +137,18 @@ export class LeaderboardUI {
     title.textContent = 'Leaderboard';
     panel.appendChild(title);
 
+    // Tab bar
+    const tabs = document.createElement('div');
+    tabs.className = 'lb-tabs';
+    this._tabLocal = document.createElement('button');
+    this._tabLocal.className = 'lb-tab active';
+    this._tabLocal.textContent = 'Local';
+    this._tabGlobal = document.createElement('button');
+    this._tabGlobal.className = 'lb-tab';
+    this._tabGlobal.textContent = 'Global';
+    tabs.append(this._tabLocal, this._tabGlobal);
+    panel.appendChild(tabs);
+
     this.list = document.createElement('ol');
     this.list.className = 'lb-list';
     panel.appendChild(this.list);
@@ -149,9 +161,30 @@ export class LeaderboardUI {
 
     this.boardOverlay.appendChild(panel);
     document.getElementById('stage').appendChild(this.boardOverlay);
+
+    this._tabLocal.addEventListener('click', () => {
+      this._tabLocal.classList.add('active');
+      this._tabGlobal.classList.remove('active');
+      this._renderLocal();
+    });
+    this._tabGlobal.addEventListener('click', () => {
+      this._tabGlobal.classList.add('active');
+      this._tabLocal.classList.remove('active');
+      this._renderGlobal();
+    });
   }
 
   showBoard(highlightName) {
+    this._highlightName = highlightName;
+    // Reset to local tab
+    this._tabLocal.classList.add('active');
+    this._tabGlobal.classList.remove('active');
+    this._renderLocal();
+    this.boardOverlay.hidden = false;
+    requestAnimationFrame(() => this.boardOverlay.classList.add('visible'));
+  }
+
+  _renderLocal() {
     const top = this.leaderboard.getTop();
     this.list.innerHTML = '';
     if (top.length === 0) {
@@ -161,24 +194,63 @@ export class LeaderboardUI {
       this.list.appendChild(empty);
     } else {
       top.forEach((entry, i) => {
-        const li = document.createElement('li');
-        li.className = 'lb-entry';
-        if (entry.name === highlightName) li.classList.add('me');
-        const rank = document.createElement('span');
-        rank.className = 'lb-rank';
-        rank.textContent = `${i + 1}`;
-        const name = document.createElement('span');
-        name.className = 'lb-name';
-        name.textContent = entry.name;
-        const score = document.createElement('span');
-        score.className = 'lb-score';
-        score.textContent = entry.score;
-        li.append(rank, name, score);
+        const li = this._makeEntry(i + 1, entry.name, entry.score, entry.name === this._highlightName);
         this.list.appendChild(li);
       });
     }
-    this.boardOverlay.hidden = false;
-    requestAnimationFrame(() => this.boardOverlay.classList.add('visible'));
+  }
+
+  async _renderGlobal() {
+    this.list.innerHTML = '';
+    const loading = document.createElement('li');
+    loading.className = 'lb-empty';
+    loading.textContent = 'Loading...';
+    this.list.appendChild(loading);
+
+    const { entries, configured } = await this.leaderboard.fetchGlobal(20);
+    this.list.innerHTML = '';
+
+    if (!configured) {
+      const msg = document.createElement('li');
+      msg.className = 'lb-empty';
+      msg.textContent = 'Global board not set up yet.';
+      this.list.appendChild(msg);
+      return;
+    }
+    if (entries.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'lb-empty';
+      empty.textContent = 'No global scores yet!';
+      this.list.appendChild(empty);
+      return;
+    }
+    entries.forEach((entry, i) => {
+      const li = this._makeEntry(i + 1, entry.name, entry.score, entry.name === this._highlightName, entry.difficulty);
+      this.list.appendChild(li);
+    });
+  }
+
+  _makeEntry(rank, name, score, isMe, difficulty) {
+    const li = document.createElement('li');
+    li.className = 'lb-entry';
+    if (isMe) li.classList.add('me');
+    const rankEl = document.createElement('span');
+    rankEl.className = 'lb-rank';
+    rankEl.textContent = String(rank);
+    const nameEl = document.createElement('span');
+    nameEl.className = 'lb-name';
+    nameEl.textContent = name;
+    const scoreEl = document.createElement('span');
+    scoreEl.className = 'lb-score';
+    scoreEl.textContent = String(score);
+    li.append(rankEl, nameEl, scoreEl);
+    if (difficulty && difficulty !== 'normal') {
+      const badge = document.createElement('span');
+      badge.className = 'lb-diff-badge';
+      badge.textContent = difficulty === 'nightmare' ? '☠' : difficulty[0].toUpperCase();
+      li.appendChild(badge);
+    }
+    return li;
   }
 
   hideBoard() {

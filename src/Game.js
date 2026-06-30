@@ -12,6 +12,7 @@ import {
   GROUND,
   JUICE,
   STORAGE_KEY,
+  DIFFICULTY,
 } from './config.js';
 import { AssetLoader } from './AssetLoader.js';
 import { AudioManager } from './AudioManager.js';
@@ -23,6 +24,8 @@ import { Background, Ground } from './Scenery.js';
 import { ParticleSystem } from './Particles.js';
 import { Settings } from './Settings.js';
 import { SettingsUI } from './SettingsUI.js';
+import { vibrate } from './Haptic.js';
+import { PowerupSystem } from './PowerupSystem.js';
 import { Leaderboard } from './Leaderboard.js';
 import { LeaderboardUI } from './LeaderboardUI.js';
 
@@ -38,6 +41,7 @@ export class Game {
     this.audio = new AudioManager();
     this.settings = new Settings();
     this.audio.setMuted(this.settings.get('muted'));
+    this.audio.setVolume(this.settings.get('volume') ?? 0.8);
     this.leaderboard = new Leaderboard();
 
     this.score = 0;
@@ -77,6 +81,7 @@ export class Game {
     this.background = new Background(this.assets.images[bgKey]);
     this.ground = new Ground(this.assets.images.base);
     this.particles = new ParticleSystem();
+    this.powerups = new PowerupSystem();
 
     // Leaderboard + name prompt UI, plus a trophy button to view the board.
     this.leaderboardUI = new LeaderboardUI(this.leaderboard);
@@ -137,6 +142,12 @@ export class Game {
         this.birdColor = this.settings.resolveBirdColor(this.assets.birdColors);
         this.bird.setColor(this.birdColor);
         break;
+      case 'volume':
+        this.audio.setVolume(value);
+        break;
+      case 'difficulty':
+        // Applied on next round start via _enterReady
+        break;
     }
   }
 
@@ -150,6 +161,9 @@ export class Game {
     this.bird.setColor(this.birdColor);
     this.bird.reset();
     this.pipes.reset();
+    const diff = this.settings.get('difficulty') ?? 'normal';
+    this.pipes.setDifficulty(diff);
+    this.powerups.reset();
     const bgKey = this.settings.resolveBackgroundKey();
     this.background.transitionTo(this.assets.images[bgKey]);
     this.gameoverTime = 0;
@@ -170,6 +184,7 @@ export class Game {
     this.shakeTime = JUICE.SHAKE_DURATION;
     this.flashTime = JUICE.FLASH_DURATION;
     this.audio.play('hit');
+    vibrate([40, 30, 80]);
     // "die" sound shortly after the hit, like the original.
     setTimeout(() => this.audio.play('die'), 120);
 
@@ -180,6 +195,7 @@ export class Game {
     }
     // Record this run on the leaderboard under the current player name.
     this.leaderboard.submit(this.playerName, this.score);
+    this.leaderboard.submitGlobal(this.playerName, this.score, this.settings.get('difficulty') ?? 'normal');
   }
 
   // ---- Input -------------------------------------------------------------
@@ -222,6 +238,7 @@ export class Game {
       case STATE.PLAYING:
         this.bird.flap();
         this.audio.play('wing');
+        vibrate(15);
         break;
       case STATE.GAMEOVER:
         // Require the game-over panel to finish appearing before restart.
@@ -281,6 +298,7 @@ export class Game {
     if (this.scorePopTime > 0) this.scorePopTime -= dt;
     if (this.bounceTime > 0) this.bounceTime -= dt;
     this.particles.update(dt);
+    this.powerups.update(dt);
 
     switch (this.state) {
       case STATE.READY:
@@ -294,15 +312,26 @@ export class Game {
         this.ground.update(dt);
         this.bird.update(dt);
 
-        const passed = this.pipes.update(dt, this.bird.x);
+        const speedMult = this.powerups.getSpeedMult();
+        const passed = this.pipes.update(dt, this.bird.x, speedMult);
         if (passed > 0) this._onScore(passed);
+
+        const collected = this.powerups.checkCollect(this.bird.getBounds(), this.pipes.getActivePipes());
+        if (collected) this.audio.play('swoosh');
 
         // Collisions.
         if (
           CollisionSystem.hitsPipes(this.bird, this.pipes.getActivePipes()) ||
           CollisionSystem.hitsCeiling(this.bird)
         ) {
-          this._enterGameOver();
+          if (this.powerups.consumeShield()) {
+            this.shakeTime = JUICE.SHAKE_DURATION * 0.35;
+            this.flashTime = JUICE.FLASH_DURATION * 0.5;
+            this.audio.play('hit');
+            vibrate(20);
+          } else {
+            this._enterGameOver();
+          }
         } else if (CollisionSystem.hitsGround(this.bird)) {
           // Clamp to ground then die.
           this._enterGameOver();
@@ -325,7 +354,8 @@ export class Game {
   }
 
   _onScore(count) {
-    this.score += count;
+    const bonus = this.powerups.consumeScorePlus();
+    this.score += count + bonus;
     this.audio.play('point');
     this.scorePopTime = JUICE.SCORE_POP_DURATION;
     this.bounceTime = JUICE.PIPE_PASS_BOUNCE;
@@ -374,6 +404,7 @@ export class Game {
     } else if (this.state === STATE.PLAYING) {
       const pop = this._scorePopScale();
       this.ui.drawLiveScore(ctx, this.score, pop);
+      this.powerups.drawHUD(ctx);
     } else if (this.state === STATE.GAMEOVER) {
       // Keep the live score area empty; show panel instead.
       const t = Math.min(1, this.gameoverTime / JUICE.GAMEOVER_FADE_DURATION);

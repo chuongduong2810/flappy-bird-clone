@@ -66,6 +66,27 @@ export class Leaderboard {
     return idx === -1 ? null : idx + 1;
   }
 
+  /** Asynchronously submit score to the global leaderboard API. Non-blocking. */
+  submitGlobal(name, score, difficulty = 'normal') {
+    if (!name || score <= 0) return;
+    fetch('/api/leaderboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, score, difficulty }),
+    }).catch(() => {}); // fire and forget
+  }
+
+  /** Fetch top entries from the global leaderboard API. Returns a promise. */
+  async fetchGlobal(limit = 20) {
+    try {
+      const res = await fetch(`/api/leaderboard?limit=${limit}`);
+      if (!res.ok) return { entries: [], configured: false };
+      return await res.json();
+    } catch {
+      return { entries: [], configured: false };
+    }
+  }
+
   /** Top entries (already sorted). */
   getTop(limit = MAX_ENTRIES) {
     return this.entries.slice(0, limit);
