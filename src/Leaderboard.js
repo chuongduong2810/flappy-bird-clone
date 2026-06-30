@@ -8,7 +8,7 @@
 
 const LEADERBOARD_KEY = 'flappy_leaderboard';
 const NAME_KEY = 'flappy_player_name';
-const MAX_ENTRIES = 10;
+const MAX_ENTRIES = 40; // 10 per difficulty mode
 
 export class Leaderboard {
   constructor() {
@@ -55,15 +55,17 @@ export class Leaderboard {
    * Adds a score for a player, keeping only the top MAX_ENTRIES.
    * Returns the 1-based rank of this entry, or null if it didn't make the list.
    */
-  submit(name, score) {
+  submit(name, score, difficulty = 'normal') {
     if (!name || score <= 0) return null;
-    const entry = { name, score, date: Date.now() };
+    const entry = { name, score, difficulty, date: Date.now() };
     this.entries.push(entry);
     this.entries.sort((a, b) => b.score - a.score || a.date - b.date);
     this.entries = this.entries.slice(0, MAX_ENTRIES);
     this._save();
-    const idx = this.entries.indexOf(entry);
-    return idx === -1 ? null : idx + 1;
+    // Return rank within the same difficulty.
+    const diffEntries = this.getTop(difficulty);
+    const rank = diffEntries.findIndex((e) => e.date === entry.date && e.name === entry.name);
+    return rank === -1 ? null : rank + 1;
   }
 
   /** Asynchronously submit score to the global leaderboard API. Non-blocking. */
@@ -77,9 +79,11 @@ export class Leaderboard {
   }
 
   /** Fetch top entries from the global leaderboard API. Returns a promise. */
-  async fetchGlobal(limit = 20) {
+  async fetchGlobal(limit = 20, difficulty = null) {
     try {
-      const res = await fetch(`/api/leaderboard?limit=${limit}`);
+      const params = new URLSearchParams({ limit: String(limit) });
+      if (difficulty) params.set('difficulty', difficulty);
+      const res = await fetch(`/api/leaderboard?${params}`);
       if (!res.ok) return { entries: [], configured: false };
       return await res.json();
     } catch {
@@ -87,9 +91,15 @@ export class Leaderboard {
     }
   }
 
-  /** Top entries (already sorted). */
-  getTop(limit = MAX_ENTRIES) {
-    return this.entries.slice(0, limit);
+  /**
+   * Top entries filtered by difficulty, sorted descending.
+   * Pass null/'all' to get the overall top across all modes.
+   */
+  getTop(difficulty = null, limit = 10) {
+    const entries = (difficulty && difficulty !== 'all')
+      ? this.entries.filter((e) => (e.difficulty || 'normal') === difficulty)
+      : this.entries;
+    return entries.slice(0, limit);
   }
 
   clear() {

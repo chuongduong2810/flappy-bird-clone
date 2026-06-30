@@ -118,7 +118,7 @@ export class Game {
     btn.setAttribute('aria-label', 'Leaderboard');
     btn.innerHTML = '&#127942;'; // trophy glyph
     btn.addEventListener('click', () =>
-      this.leaderboardUI.showBoard(this.playerName)
+      this.leaderboardUI.showBoard(this.playerName, this.settings.get('difficulty') ?? 'normal')
     );
     document.getElementById('stage').appendChild(btn);
   }
@@ -146,7 +146,7 @@ export class Game {
         this.audio.setVolume(value);
         break;
       case 'difficulty':
-        // Applied on next round start via _enterReady
+        this.pipes.setDifficulty(value);
         break;
     }
   }
@@ -194,7 +194,7 @@ export class Game {
       this._saveBest();
     }
     // Record this run on the leaderboard under the current player name.
-    this.leaderboard.submit(this.playerName, this.score);
+    this.leaderboard.submit(this.playerName, this.score, this.settings.get('difficulty') ?? 'normal');
     this.leaderboard.submitGlobal(this.playerName, this.score, this.settings.get('difficulty') ?? 'normal');
   }
 

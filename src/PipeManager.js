@@ -44,6 +44,10 @@ export class PipeManager {
 
   setDifficulty(key) {
     this.diffConfig = DIFFICULTY[key] || DIFFICULTY.normal;
+    // Apply new gap to already-active pipes so visual and collision match immediately.
+    for (const p of this.pool) {
+      if (p.active) p.gap = this.diffConfig.gap;
+    }
   }
 
   /** Returns an inactive pipe from the pool, or null if all are in use. */

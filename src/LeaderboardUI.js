@@ -137,17 +137,38 @@ export class LeaderboardUI {
     title.textContent = 'Leaderboard';
     panel.appendChild(title);
 
-    // Tab bar
-    const tabs = document.createElement('div');
-    tabs.className = 'lb-tabs';
+    // Row 1: Local | Global
+    const sourceTabs = document.createElement('div');
+    sourceTabs.className = 'lb-tabs';
     this._tabLocal = document.createElement('button');
     this._tabLocal.className = 'lb-tab active';
     this._tabLocal.textContent = 'Local';
     this._tabGlobal = document.createElement('button');
     this._tabGlobal.className = 'lb-tab';
     this._tabGlobal.textContent = 'Global';
-    tabs.append(this._tabLocal, this._tabGlobal);
-    panel.appendChild(tabs);
+    sourceTabs.append(this._tabLocal, this._tabGlobal);
+    panel.appendChild(sourceTabs);
+
+    // Row 2: difficulty filters
+    const DIFF_FILTERS = [
+      { key: 'all',       label: 'All' },
+      { key: 'easy',      label: 'Easy' },
+      { key: 'normal',    label: 'Normal' },
+      { key: 'hard',      label: 'Hard' },
+      { key: 'nightmare', label: '☠' },
+    ];
+    const diffTabs = document.createElement('div');
+    diffTabs.className = 'lb-tabs lb-diff-tabs';
+    this._diffBtns = {};
+    DIFF_FILTERS.forEach(({ key, label }) => {
+      const btn = document.createElement('button');
+      btn.className = 'lb-tab lb-diff-tab';
+      btn.textContent = label;
+      btn.dataset.diff = key;
+      diffTabs.appendChild(btn);
+      this._diffBtns[key] = btn;
+    });
+    panel.appendChild(diffTabs);
 
     this.list = document.createElement('ol');
     this.list.className = 'lb-list';
@@ -162,30 +183,58 @@ export class LeaderboardUI {
     this.boardOverlay.appendChild(panel);
     document.getElementById('stage').appendChild(this.boardOverlay);
 
+    // Source tab clicks
     this._tabLocal.addEventListener('click', () => {
       this._tabLocal.classList.add('active');
       this._tabGlobal.classList.remove('active');
-      this._renderLocal();
+      this._isGlobal = false;
+      this._refresh();
     });
     this._tabGlobal.addEventListener('click', () => {
       this._tabGlobal.classList.add('active');
       this._tabLocal.classList.remove('active');
-      this._renderGlobal();
+      this._isGlobal = true;
+      this._refresh();
+    });
+
+    // Difficulty filter clicks
+    diffTabs.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-diff]');
+      if (!btn) return;
+      this._activeDiff = btn.dataset.diff;
+      this._updateDiffTabs();
+      this._refresh();
     });
   }
 
-  showBoard(highlightName) {
+  _updateDiffTabs() {
+    Object.entries(this._diffBtns).forEach(([key, btn]) => {
+      btn.classList.toggle('active', key === this._activeDiff);
+    });
+  }
+
+  showBoard(highlightName, currentDifficulty = 'normal') {
     this._highlightName = highlightName;
-    // Reset to local tab
+    this._activeDiff = currentDifficulty;
+    this._isGlobal = false;
     this._tabLocal.classList.add('active');
     this._tabGlobal.classList.remove('active');
-    this._renderLocal();
+    this._updateDiffTabs();
+    this._refresh();
     this.boardOverlay.hidden = false;
     requestAnimationFrame(() => this.boardOverlay.classList.add('visible'));
   }
 
+  _refresh() {
+    if (this._isGlobal) {
+      this._renderGlobal();
+    } else {
+      this._renderLocal();
+    }
+  }
+
   _renderLocal() {
-    const top = this.leaderboard.getTop();
+    const top = this.leaderboard.getTop(this._activeDiff);
     this.list.innerHTML = '';
     if (top.length === 0) {
       const empty = document.createElement('li');
@@ -207,7 +256,8 @@ export class LeaderboardUI {
     loading.textContent = 'Loading...';
     this.list.appendChild(loading);
 
-    const { entries, configured } = await this.leaderboard.fetchGlobal(20);
+    const diff = this._activeDiff === 'all' ? null : this._activeDiff;
+    const { entries, configured } = await this.leaderboard.fetchGlobal(20, diff);
     this.list.innerHTML = '';
 
     if (!configured) {
@@ -220,12 +270,13 @@ export class LeaderboardUI {
     if (entries.length === 0) {
       const empty = document.createElement('li');
       empty.className = 'lb-empty';
-      empty.textContent = 'No global scores yet!';
+      empty.textContent = 'No scores for this mode yet!';
       this.list.appendChild(empty);
       return;
     }
     entries.forEach((entry, i) => {
-      const li = this._makeEntry(i + 1, entry.name, entry.score, entry.name === this._highlightName, entry.difficulty);
+      const showBadge = this._activeDiff === 'all';
+      const li = this._makeEntry(i + 1, entry.name, entry.score, entry.name === this._highlightName, showBadge ? entry.difficulty : null);
       this.list.appendChild(li);
     });
   }

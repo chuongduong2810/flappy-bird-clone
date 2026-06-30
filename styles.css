@@ -390,6 +390,14 @@ body {
   background: #f4a322;
   color: #fff;
 }
+.lb-diff-tabs {
+  margin-top: -6px;
+  margin-bottom: 10px;
+}
+.lb-diff-tab {
+  font-size: 10px;
+  padding: 5px 0;
+}
 .lb-diff-badge {
   font-size: 10px;
   padding: 2px 5px;
