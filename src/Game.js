@@ -277,6 +277,37 @@ export class Game {
         this._showToast('ADMIN: 9999 coins added!');
       }
     });
+
+    // Mobile cheat: tap the top-left corner 7 times quickly.
+    // Uses a corner zone so normal gameplay taps don't accidentally trigger it.
+    let _tapCount = 0;
+    let _tapLast = 0;
+    const handleSecretTap = (clientX, clientY) => {
+      if (modalOpen()) return;
+      const r = this.canvas.getBoundingClientRect();
+      const x = clientX - r.left;
+      const y = clientY - r.top;
+      const inZone = x >= 0 && y >= 0 && x <= 56 && y <= 56;
+      if (!inZone) return;
+      const now = performance.now();
+      if (now - _tapLast > 1200) _tapCount = 0;
+      _tapLast = now;
+      _tapCount += 1;
+      if (_tapCount >= 7) {
+        _tapCount = 0;
+        this.coinSystem.cheatUnlimitedCoins();
+        this.shopUI?.refresh();
+        this._showToast('ADMIN: 9999 coins added!');
+      }
+    };
+    this.canvas.addEventListener(
+      'pointerdown',
+      (e) => {
+        // Pointer events cover touch + mouse.
+        handleSecretTap(e.clientX, e.clientY);
+      },
+      { passive: true }
+    );
     this.canvas.addEventListener('mousedown', flap);
     this.canvas.addEventListener('touchstart', flap, { passive: false });
   }
