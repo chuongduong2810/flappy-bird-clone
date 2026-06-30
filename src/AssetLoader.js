@@ -5,12 +5,12 @@
  * avoid first-frame hitches.
  */
 
-import { ALL_CHARACTERS } from './config.js';
+import { spriteUrl } from './characters.js';
 
 const SPRITE_BASE = 'assets/sprites/';
 const AUDIO_BASE = 'assets/audio/';
 
-const IMAGE_MANIFEST = {
+const STATIC_IMAGES = {
   backgroundDay: 'background-day.png',
   backgroundNight: 'background-night.png',
   base: 'base.png',
@@ -18,21 +18,11 @@ const IMAGE_MANIFEST = {
   pipeRed: 'pipe-red.png',
   message: 'message.png',
   gameover: 'gameover.png',
-  // Digits 0-9 for the large score font.
   ...Object.fromEntries(
     Array.from({ length: 10 }, (_, i) => [`digit${i}`, `${i}.png`])
   ),
-  // All character animation frames for every character in ALL_CHARACTERS.
-  ...Object.fromEntries(
-    ALL_CHARACTERS.flatMap((c) => [
-      [`${c.id}Up`,   c.up],
-      [`${c.id}Mid`,  c.mid],
-      [`${c.id}Down`, c.down],
-    ])
-  ),
 };
 
-// Prefer .ogg, browsers without support fall back to .wav.
 const AUDIO_MANIFEST = {
   wing: 'wing',
   point: 'point',
@@ -41,11 +31,29 @@ const AUDIO_MANIFEST = {
   swoosh: 'swoosh',
 };
 
+function buildCharacterManifest(characters) {
+  return Object.fromEntries(
+    characters.flatMap((c) => [
+      [`${c.id}Up`, c.up],
+      [`${c.id}Mid`, c.mid],
+      [`${c.id}Down`, c.down],
+    ])
+  );
+}
+
 export class AssetLoader {
-  constructor() {
+  /**
+   * @param {Array<{id:string,up:string,mid:string,down:string}>} characters
+   */
+  constructor(characters) {
+    this.characters = characters;
     this.images = {};
     this.audioBuffers = {};
-    this.birdColors = ALL_CHARACTERS.map(c => c.id);
+    this.birdColors = characters.map((c) => c.id);
+    this._imageManifest = {
+      ...STATIC_IMAGES,
+      ...buildCharacterManifest(characters),
+    };
   }
 
   /**
@@ -55,14 +63,14 @@ export class AssetLoader {
    * @param {AudioContext|null} audioContext - used to decode sfx if available.
    */
   async loadAll(onProgress, audioContext) {
-    const imageEntries = Object.entries(IMAGE_MANIFEST);
+    const imageEntries = Object.entries(this._imageManifest);
     const audioEntries = Object.entries(AUDIO_MANIFEST);
     const total = imageEntries.length + audioEntries.length;
     let done = 0;
     const tick = () => onProgress && onProgress(++done / total);
 
     const imagePromises = imageEntries.map(async ([key, file]) => {
-      this.images[key] = await this._loadImage(SPRITE_BASE + file);
+      this.images[key] = await this._loadImage(spriteUrl(file), file);
       tick();
     });
 
@@ -74,11 +82,20 @@ export class AssetLoader {
     await Promise.all([...imagePromises, ...audioPromises]);
   }
 
-  _loadImage(src) {
+  async _loadImage(src, filename) {
+    try {
+      return await this._loadImageOnce(src);
+    } catch {
+      // Dynamic sprites added via admin may only exist on the API route.
+      const fallback = `/api/sprite?file=${encodeURIComponent(filename)}`;
+      return this._loadImageOnce(fallback);
+    }
+  }
+
+  _loadImageOnce(src) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = async () => {
-        // Decode eagerly when supported to prevent runtime stalls.
         if (img.decode) {
           try {
             await img.decode();
@@ -112,7 +129,6 @@ export class AssetLoader {
     }
 
     if (audioContext) {
-      // decodeAudioData is callback-based in older Safari; wrap defensively.
       return await new Promise((resolve, reject) => {
         audioContext.decodeAudioData(
           arrayBuffer.slice(0),
@@ -121,7 +137,6 @@ export class AssetLoader {
         );
       });
     }
-    // Fallback: build a blob URL for HTMLAudio playback.
     return URL.createObjectURL(new Blob([arrayBuffer]));
   }
 }

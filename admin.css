@@ -1,0 +1,257 @@
+/* Admin panel — scrollable layout (unlike the game canvas page). */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  background: #12121f;
+  background: radial-gradient(circle at 50% 0%, #2a3a5e 0%, #12121f 60%);
+  color: #e8e8f0;
+  font-family: "Press Start 2P", monospace, sans-serif;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+#app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.admin-header h1 {
+  font-size: 14px;
+  color: #4ec0ca;
+}
+
+.back-link {
+  color: #8ab4f8;
+  text-decoration: none;
+  font-size: 8px;
+}
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.panel h2 {
+  font-size: 11px;
+  margin-bottom: 16px;
+  color: #fff;
+}
+
+.hint {
+  font-size: 7px;
+  color: #9aa0b4;
+  margin-bottom: 14px;
+  line-height: 1.8;
+}
+
+.hint code,
+.field-hint {
+  font-family: ui-monospace, monospace;
+  font-size: 7px;
+  color: #7eb8ff;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  color: #6b7280;
+}
+
+.req {
+  color: #f87171;
+}
+
+label {
+  display: block;
+  font-size: 8px;
+  margin-bottom: 12px;
+  color: #c8cad4;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"] {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+}
+
+input[type="file"] {
+  display: block;
+  margin-top: 8px;
+  font-size: 8px;
+  color: #9aa0b4;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+
+@media (min-width: 520px) {
+  .form-row {
+    grid-template-columns: 1fr 1fr 120px;
+  }
+}
+
+.sprite-uploads {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.upload-box {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.preview {
+  display: block;
+  max-width: 100%;
+  max-height: 64px;
+  margin: 10px auto 0;
+  image-rendering: pixelated;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.btn {
+  font-family: inherit;
+  font-size: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  transition: background 0.15s;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.btn.primary {
+  background: #4ec0ca;
+  color: #0d1b1e;
+}
+.btn.primary:hover {
+  background: #6ed4dc;
+}
+
+.btn.small {
+  padding: 6px 10px;
+  font-size: 7px;
+}
+
+.btn.danger {
+  background: rgba(248, 113, 113, 0.2);
+  color: #fca5a5;
+}
+.btn.danger:hover {
+  background: rgba(248, 113, 113, 0.35);
+}
+
+.error {
+  color: #f87171;
+  font-size: 8px;
+  margin-top: 10px;
+}
+
+.status {
+  font-size: 8px;
+  margin-top: 14px;
+  padding: 10px;
+  border-radius: 6px;
+}
+.status.success {
+  background: rgba(74, 222, 128, 0.12);
+  color: #86efac;
+}
+.status.error {
+  background: rgba(248, 113, 113, 0.12);
+  color: #fca5a5;
+}
+
+.char-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.char-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.char-thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+.char-info {
+  flex: 1;
+  min-width: 0;
+}
+.char-info strong {
+  display: block;
+  font-size: 9px;
+  margin-bottom: 4px;
+}
+.char-meta {
+  font-size: 7px;
+  color: #9aa0b4;
+  font-family: ui-monospace, monospace;
+}
+
+.char-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}

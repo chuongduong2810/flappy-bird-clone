@@ -4,6 +4,15 @@
 
 import { Game } from './Game.js';
 
+// Avoid stale asset/config caching while developing.
+// Vite sets import.meta.env.PROD at build time.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+} else if ('serviceWorker' in navigator) {
+  // Ensure any previously-installed SW doesn't keep caching during dev.
+  navigator.serviceWorker.getRegistrations?.().then((regs) => regs.forEach((r) => r.unregister())).catch(() => {});
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('game');
   const game = new Game(canvas);

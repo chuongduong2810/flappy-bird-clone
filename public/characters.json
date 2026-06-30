@@ -1,0 +1,52 @@
+{
+  "characters": [
+    {
+      "id": "yellow",
+      "label": "Yellow Bird",
+      "price": 0,
+      "up": "yellowbird-upflap.png",
+      "mid": "yellowbird-midflap.png",
+      "down": "yellowbird-downflap.png"
+    },
+    {
+      "id": "red",
+      "label": "Red Bird",
+      "price": 0,
+      "up": "redbird-upflap.png",
+      "mid": "redbird-midflap.png",
+      "down": "redbird-downflap.png"
+    },
+    {
+      "id": "blue",
+      "label": "Blue Bird",
+      "price": 0,
+      "up": "bluebird-upflap.png",
+      "mid": "bluebird-midflap.png",
+      "down": "bluebird-downflap.png"
+    },
+    {
+      "id": "dragon",
+      "label": "Dragon",
+      "price": 50,
+      "up": "dragon_upflap.png",
+      "mid": "dragon_midflap.png",
+      "down": "dragon_downflap.png"
+    },
+    {
+      "id": "red_dragon",
+      "label": "Red Dragon",
+      "price": 100,
+      "up": "red_dragon_upflap.png",
+      "mid": "red_dragon_midflap.png",
+      "down": "red_dragon_downflap.png"
+    },
+    {
+      "id": "phoenix",
+      "label": "Phoenix",
+      "price": 150,
+      "up": "phoenix_upflap.png",
+      "mid": "phoenix_midflap.png",
+      "down": "phoenix_downflap.png"
+    }
+  ]
+}

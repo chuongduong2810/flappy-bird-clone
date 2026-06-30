@@ -513,7 +513,8 @@ body {
 }
 .shop-sprite {
   width: 48px;
-  height: auto;
+  height: 48px;
+  object-fit: contain;
   image-rendering: pixelated;
 }
 .shop-name {

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flappy Bird — Character Admin</title>
+    <link rel="icon" href="assets/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="admin-header">
+        <h1>Character Admin</h1>
+        <a href="./" class="back-link">← Back to game</a>
+      </header>
+
+      <section id="login-section" class="panel">
+        <h2>Sign in</h2>
+        <p class="hint">
+          Enter the admin secret. Locally the default is <code>flappy-admin</code>
+          unless you set <code>ADMIN_SECRET</code> in your environment.
+        </p>
+        <form id="login-form">
+          <label>
+            Admin secret
+            <input type="password" id="secret-input" autocomplete="current-password" required />
+          </label>
+          <button type="submit" class="btn primary">Enter</button>
+        </form>
+        <p id="login-error" class="error" hidden></p>
+      </section>
+
+      <section id="admin-section" hidden>
+        <div class="panel">
+          <h2>Add / update character</h2>
+          <form id="char-form">
+            <div class="form-row">
+              <label>
+                ID <span class="req">*</span>
+                <input type="text" id="char-id" pattern="[a-z0-9_]+" placeholder="nobita" required />
+                <span class="field-hint">lowercase letters, numbers, underscores</span>
+              </label>
+              <label>
+                Display name <span class="req">*</span>
+                <input type="text" id="char-label" placeholder="Nobita" required />
+              </label>
+              <label>
+                Price (coins)
+                <input type="number" id="char-price" min="0" max="9999" value="50" />
+              </label>
+            </div>
+
+            <div class="sprite-uploads">
+              <label class="upload-box">
+                <span>Up flap <span class="req">*</span></span>
+                <input type="file" id="sprite-up" accept="image/png,image/webp" required />
+                <img id="preview-up" class="preview" alt="" hidden />
+              </label>
+              <label class="upload-box">
+                <span>Mid flap <span class="req">*</span></span>
+                <input type="file" id="sprite-mid" accept="image/png,image/webp" required />
+                <img id="preview-mid" class="preview" alt="" hidden />
+              </label>
+              <label class="upload-box">
+                <span>Down flap <span class="req">*</span></span>
+                <input type="file" id="sprite-down" accept="image/png,image/webp" required />
+                <img id="preview-down" class="preview" alt="" hidden />
+              </label>
+            </div>
+
+            <p class="hint">
+              Sprites are saved to <code>public/assets/sprites/</code> and registered in
+              <code>characters.json</code>. Updating an existing ID replaces its entry.
+            </p>
+
+            <div class="form-actions">
+              <button type="submit" class="btn primary" id="submit-btn">Save character</button>
+              <button type="reset" class="btn">Clear form</button>
+            </div>
+          </form>
+          <p id="form-status" class="status" hidden></p>
+        </div>
+
+        <div class="panel">
+          <h2>Current characters</h2>
+          <div id="char-list" class="char-list"></div>
+        </div>
+      </section>
+    </div>
+    <script type="module" src="src/admin.js"></script>
+  </body>
+</html>

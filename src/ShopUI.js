@@ -4,9 +4,7 @@
  * and equip their selection. Driven by CoinSystem and Settings.
  */
 
-import { ALL_CHARACTERS } from './config.js';
-
-const SPRITE_BASE = 'assets/sprites/';
+import { getCharacters, spriteUrl } from './characters.js';
 
 export class ShopUI {
   /**
@@ -22,7 +20,6 @@ export class ShopUI {
   }
 
   _build() {
-    // Shop button (top-left of the stage)
     this.btn = document.createElement('button');
     this.btn.id = 'shop-btn';
     this.btn.setAttribute('aria-label', 'Character Shop');
@@ -30,7 +27,6 @@ export class ShopUI {
     this.btn.addEventListener('click', () => this.open());
     document.getElementById('stage').appendChild(this.btn);
 
-    // Modal overlay
     this.overlay = document.createElement('div');
     this.overlay.id = 'shop-overlay';
     this.overlay.hidden = true;
@@ -82,18 +78,18 @@ export class ShopUI {
     this.overlay.hidden = true;
   }
 
-  /** Call this after any coin balance change to keep the button label fresh. */
   refresh() {
     this._updateBtnLabel();
     if (!this.overlay.hidden) this._render();
   }
 
   _render() {
+    const characters = getCharacters();
     const equipped = this.settings.get('birdColor') ?? 'yellow';
     this.balanceEl.textContent = `🪙 ${this.coins.getBalance()} coins`;
     this.grid.innerHTML = '';
 
-    for (const char of ALL_CHARACTERS) {
+    for (const char of characters) {
       const owned = this.coins.isOwned(char.id);
       const isEquipped = equipped === char.id;
 
@@ -102,9 +98,12 @@ export class ShopUI {
       if (isEquipped) card.classList.add('equipped');
 
       const img = document.createElement('img');
-      img.src = SPRITE_BASE + char.mid;
+      img.src = spriteUrl(char.mid);
       img.className = 'shop-sprite';
       img.alt = char.label;
+      img.onerror = () => {
+        img.src = `/api/sprite?file=${encodeURIComponent(char.mid)}`;
+      };
       card.appendChild(img);
 
       const name = document.createElement('div');
