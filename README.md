@@ -35,6 +35,25 @@ static host or sub-path (e.g. GitHub Pages).
 > the folder with any static server (`python -m http.server 8000`) and open
 > `index.html`.
 
+## Deploy
+
+The project includes `vercel.json` so Vercel builds the latest release with
+`npm ci` and `npm run build`, then serves the generated `dist/` directory
+alongside the serverless functions in `api/`.
+
+For production features that persist data, configure these environment variables
+in Vercel before deploying:
+
+```bash
+ADMIN_SECRET=your-secret-here
+flappybase_KV_REST_API_URL=your-upstash-rest-url
+flappybase_KV_REST_API_TOKEN=your-upstash-rest-token
+```
+
+The service worker uses a network-first app shell strategy and bypasses runtime
+API/catalog caching so returning PWA users receive the latest deployed game
+instead of an older cached build.
+
 ## Architecture
 
 | Module | Responsibility |

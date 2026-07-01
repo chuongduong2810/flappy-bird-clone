@@ -1,5 +1,28 @@
-const CACHE = 'flappy-v1';
+const CACHE = 'flappy-v1.0.1';
 const PRECACHE = ['./'];
+
+function shouldFetchFresh(url) {
+  return url.pathname.endsWith('/characters.json') || url.pathname.includes('/api/');
+}
+
+function isAppShellRequest(request) {
+  return request.mode === 'navigate'
+    || request.destination === 'document'
+    || request.headers.get('accept')?.includes('text/html');
+}
+
+async function networkFirst(request) {
+  try {
+    const fresh = await fetch(request, { cache: 'no-store' });
+    if (fresh && fresh.status === 200 && fresh.type !== 'opaque') {
+      const cache = await caches.open(CACHE);
+      await cache.put(request, fresh.clone());
+    }
+    return fresh;
+  } catch {
+    return (await caches.match(request)) || caches.match('./');
+  }
+}
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -19,9 +42,14 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
 
-  // Always fetch fresh config/catalog; do not cache it.
-  if (url.pathname.endsWith('/characters.json') || url.pathname.endsWith('/api/characters')) {
+  // Always fetch fresh runtime data; do not cache it.
+  if (shouldFetchFresh(url)) {
     e.respondWith(fetch(e.request, { cache: 'no-store' }));
+    return;
+  }
+
+  if (isAppShellRequest(e.request)) {
+    e.respondWith(networkFirst(e.request));
     return;
   }
 
