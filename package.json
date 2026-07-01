@@ -1,6 +1,6 @@
 {
   "name": "flappy-bird-clone",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A polished, faithful 2D Flappy Bird clone built with HTML5 Canvas and ES modules.",
   "type": "module",
   "scripts": {
